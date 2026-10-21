@@ -211,9 +211,21 @@
                     </button>
                 </div>
 
-                <div class="relative w-full max-w-xs md:max-w-sm rounded-xl overflow-hidden border-2 border-gold-500/50 shadow-xl group cursor-pointer" onclick="toggleBrindeModal(true)">
-                    <img src="brinde.jpg" alt="Presente Exclusivo Aury - Espelho de Bolsa" class="w-full h-64 object-cover group-hover:scale-105 transition duration-500" onerror="this.src='IMG_8311.jpg'">
-                    <div class="absolute inset-0 bg-gradient-to-t from-wine-950/80 via-transparent to-transparent flex items-end p-4">
+                <!-- Quadro da Imagem do Brinde com Fallback Elegante -->
+                <div class="relative w-full max-w-xs md:max-w-sm h-64 rounded-xl overflow-hidden border-2 border-gold-500/50 shadow-xl group cursor-pointer bg-wine-900 flex items-center justify-center" onclick="toggleBrindeModal(true)">
+                    <img src="brinde.jpg" alt="Presente Exclusivo Aury - Espelho de Bolsa" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" 
+                         onerror="this.onerror=null; this.src='brinde.png'; this.onerror=function(){ this.style.display='none'; document.getElementById('brinde-fallback').classList.remove('hidden'); };">
+                    
+                    <!-- Design de substituição caso a foto não seja encontrada no repositório -->
+                    <div id="brinde-fallback" class="hidden flex flex-col items-center justify-center text-center p-6 space-y-3 bg-gradient-to-br from-wine-900 to-wine-950 w-full h-full">
+                        <div class="w-20 h-20 rounded-full border-2 border-gold-500/50 bg-wine-950 flex items-center justify-center shadow-lg">
+                            <i class="fa-solid fa-gift text-3xl text-gold-500 animate-bounce"></i>
+                        </div>
+                        <span class="font-serif text-lg font-bold text-gold-400">Mimo Exclusivo Aury</span>
+                        <span class="text-xs text-gray-300">Espelho de Bolsa Retátil em Couro Ecológico</span>
+                    </div>
+
+                    <div class="absolute inset-0 bg-gradient-to-t from-wine-950/90 via-transparent to-transparent flex items-end p-4">
                         <span class="text-gold-400 font-serif text-sm font-bold tracking-wide flex items-center justify-between w-full">
                             Espelho de Bolsa Exclusivo Aury <i class="fa-solid fa-magnifying-glass-plus text-xs"></i>
                         </span>
@@ -267,8 +279,15 @@
                 </div>
 
                 <div class="space-y-4">
-                    <div class="rounded-xl overflow-hidden border border-gold-500/30 shadow-md aspect-video bg-gray-100">
-                        <img src="brinde.jpg" alt="Espelho de Bolsa Aury" class="w-full h-full object-cover" onerror="this.src='IMG_8311.jpg'">
+                    <div class="rounded-xl overflow-hidden border border-gold-500/30 shadow-md aspect-video bg-wine-900 flex items-center justify-center relative">
+                        <img src="brinde.jpg" alt="Espelho de Bolsa Aury" class="w-full h-full object-cover" 
+                             onerror="this.onerror=null; this.src='brinde.png'; this.onerror=function(){ this.style.display='none'; document.getElementById('brinde-modal-fallback').classList.remove('hidden'); };">
+                        
+                        <div id="brinde-modal-fallback" class="hidden flex flex-col items-center justify-center text-center p-6 space-y-2 bg-gradient-to-br from-wine-900 to-wine-950 w-full h-full text-white">
+                            <i class="fa-solid fa-gift text-4xl text-gold-500 mb-2"></i>
+                            <span class="font-serif text-xl font-bold text-gold-400">Espelho de Bolsa Exclusivo</span>
+                            <span class="text-xs text-gray-300">Capa em Couro Ecológico Marfim com Monograma Bordado</span>
+                        </div>
                     </div>
 
                     <div class="text-xs sm:text-sm text-gray-600 leading-relaxed space-y-2">
@@ -535,7 +554,7 @@
     <script>
         const numeroWhatsApp = "5591984099331";
         const SENHA_ADMIN = "aury2026";
-        const VERSION_KEY = "aury_v4_zoom_preview";
+        const VERSION_KEY = "aury_v5_brinde_fix";
 
         const defaultProducts = [
             // --- BRINCOS ---
@@ -633,7 +652,6 @@
             { id: 213, name: "Pulseira cruz cravejada", category: "pulseiras", price: 229.00, image: "pulseiras/pulseira13.jpg", badge: "", description: "A abençoada Pulseira cruz cravejada combina proteção espiritual e pedrarias cintilantes em uma única joia." }
         ];
 
-        // FORÇAR ATUALIZAÇÃO DO CACHE PARA A NOVA FUNCIONALIDADE DE LUPA
         if (!localStorage.getItem(VERSION_KEY)) {
             localStorage.setItem('aury_products', JSON.stringify(defaultProducts));
             localStorage.setItem(VERSION_KEY, "true");
@@ -741,7 +759,6 @@
             else modal.classList.add('hidden');
         }
 
-        // Função de efeito de Lupa (Zoom) interativo no mouse
         function zoomImage(e) {
             const box = e.currentTarget;
             const img = box.querySelector('img');
@@ -795,7 +812,6 @@
             const imageFile = document.getElementById('prod-image-file').files[0];
 
             if (editId) {
-                // EDITAR EXISTENTE
                 const existingProduct = products.find(p => p.id == editId);
                 if (!existingProduct) return;
 
@@ -809,7 +825,6 @@
                     updateProductInStore(editId, name, category, badge, price, existingProduct.image, description);
                 }
             } else {
-                // CADASTRAR NOVO
                 if (imageFile) {
                     const reader = new FileReader();
                     reader.onload = function(e) {
@@ -873,7 +888,6 @@
             document.getElementById('prod-price').value = product.price;
             document.getElementById('prod-desc').value = product.description || '';
 
-            // Exibir pré-visualização da imagem com lupa ativada
             showPreviewImage(product.image);
 
             document.getElementById('submit-btn').innerText = 'Atualizar Produto';
@@ -909,7 +923,6 @@
             products.forEach(p => {
                 list.innerHTML += `
                     <div class="flex items-center justify-between bg-gray-50 p-3 rounded-xl border border-gray-200 gap-3">
-                        <!-- Imagem do produto em tamanho maior com lupa ativada no mouse -->
                         <div class="zoom-box w-16 h-16 rounded-lg overflow-hidden bg-white border border-gray-300 flex-shrink-0 shadow-sm" onmousemove="zoomImage(event)" onmouseleave="resetZoom(event)">
                             <img src="${p.image}" alt="${p.name}" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/80'">
                         </div>
@@ -1058,7 +1071,6 @@
             window.open(`https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(msg)}`, '_blank');
         }
 
-        // Carrega os produtos na tela ao iniciar
         renderProducts(products);
     </script>
 </body>
