@@ -326,7 +326,7 @@
                     <div>
                         <label class="block font-semibold text-gray-700 mb-1">Selecionar Foto no Computador (Opcional ao editar):</label>
                         <input type="file" id="prod-image-file" accept="image/*" class="w-full p-2 border rounded-lg focus:outline-none focus:border-wine-900 text-xs bg-gray-50 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-wine-900 file:text-gold-500 hover:file:bg-wine-950 cursor-pointer">
-                        <p class="text-[10px] text-gray-500 mt-1">Ao editar, se não selecionar um novo arquivo, a imagem original será mantida.</p>
+                        <p class="text-[10px] text-gray-500 mt-1">Ao editar, se não escolher uma foto nova, a imagem original será mantida.</p>
                     </div>
 
                     <div>
@@ -508,6 +508,7 @@
     <script>
         const numeroWhatsApp = "5591984099331";
         const SENHA_ADMIN = "aury2026";
+        const VERSION_KEY = "aury_v2_edit"; // Chave de atualização para forçar o botão de editar
 
         const defaultProducts = [
             // --- BRINCOS ---
@@ -604,6 +605,12 @@
             { id: 212, name: "Pulseira pérola amassada folheada a ouro 18k", category: "pulseiras", price: 227.00, image: "pulseiras/pulseira12.jpg", badge: "", description: "A contemporânea Pulseira pérola amassada folheada a ouro 18k mistura a sofisticação da pérola com formas orgânicas modernas." },
             { id: 213, name: "Pulseira cruz cravejada", category: "pulseiras", price: 229.00, image: "pulseiras/pulseira13.jpg", badge: "", description: "A abençoada Pulseira cruz cravejada combina proteção espiritual e pedrarias cintilantes em uma única joia." }
         ];
+
+        // FORÇAR ATUALIZAÇÃO DO CACHE ANTIGO PARA EXIBIR BOTÃO EDITAR
+        if (!localStorage.getItem(VERSION_KEY)) {
+            localStorage.setItem('aury_products', JSON.stringify(defaultProducts));
+            localStorage.setItem(VERSION_KEY, "true");
+        }
 
         let storedProducts = localStorage.getItem('aury_products');
         let products = storedProducts ? JSON.parse(storedProducts) : defaultProducts;
@@ -719,7 +726,7 @@
             const imageFile = document.getElementById('prod-image-file').files[0];
 
             if (editId) {
-                // EDITANDO PRODUTO EXISTENTE
+                // EDITAR EXISTENTE
                 const existingProduct = products.find(p => p.id == editId);
                 if (!existingProduct) return;
 
@@ -733,7 +740,7 @@
                     updateProductInStore(editId, name, category, badge, price, existingProduct.image, description);
                 }
             } else {
-                // NOVO PRODUTO
+                // CADASTRAR NOVO
                 if (imageFile) {
                     const reader = new FileReader();
                     reader.onload = function(e) {
@@ -837,7 +844,7 @@
                             </div>
                         </div>
                         <div class="flex items-center gap-1.5 flex-shrink-0">
-                            <button onclick="editProduct(${p.id})" class="px-2.5 py-1.5 bg-gold-500 hover:bg-gold-600 text-wine-950 rounded transition font-bold text-[11px] flex items-center gap-1 shadow-sm">
+                            <button onclick="editProduct(${p.id})" class="px-2.5 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded transition font-bold text-[11px] flex items-center gap-1 shadow-sm">
                                 <i class="fa-solid fa-pen-to-square"></i> Editar
                             </button>
                             <button onclick="deleteProduct(${p.id})" class="px-2.5 py-1.5 bg-red-100 hover:bg-red-600 text-red-600 hover:text-white rounded transition font-bold text-[11px] flex items-center gap-1">
