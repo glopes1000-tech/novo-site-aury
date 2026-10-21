@@ -325,8 +325,17 @@
 
                     <div>
                         <label class="block font-semibold text-gray-700 mb-1">Selecionar Foto no Computador (Opcional ao editar):</label>
-                        <input type="file" id="prod-image-file" accept="image/*" class="w-full p-2 border rounded-lg focus:outline-none focus:border-wine-900 text-xs bg-gray-50 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-wine-900 file:text-gold-500 hover:file:bg-wine-950 cursor-pointer">
+                        <input type="file" id="prod-image-file" accept="image/*" onchange="previewSelectedImage(event)" class="w-full p-2 border rounded-lg focus:outline-none focus:border-wine-900 text-xs bg-gray-50 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-wine-900 file:text-gold-500 hover:file:bg-wine-950 cursor-pointer">
                         <p class="text-[10px] text-gray-500 mt-1">Ao editar, se não escolher uma foto nova, a imagem original será mantida.</p>
+                        
+                        <!-- Pré-visualização da imagem do produto no formulário -->
+                        <div id="image-preview-container" class="mt-3 hidden bg-gray-50 p-3 rounded-lg border border-gray-200 flex items-center gap-3">
+                            <img id="image-preview-img" src="" alt="Pré-visualização" class="w-24 h-24 object-cover rounded-lg border border-wine-900 shadow">
+                            <div>
+                                <span class="block font-bold text-wine-900 text-xs">Foto Selecionada / Atual</span>
+                                <span class="text-[10px] text-gray-500">Visualização ampliada do produto</span>
+                            </div>
+                        </div>
                     </div>
 
                     <div>
@@ -346,7 +355,7 @@
 
                 <div class="mt-6 border-t pt-4">
                     <h4 class="font-bold text-gray-700 mb-2">Gerenciar Produtos Cadastrados:</h4>
-                    <div id="admin-products-list" class="max-h-56 overflow-y-auto space-y-2 text-xs">
+                    <div id="admin-products-list" class="max-h-64 overflow-y-auto space-y-2 text-xs pr-1">
                     </div>
                 </div>
 
@@ -508,7 +517,7 @@
     <script>
         const numeroWhatsApp = "5591984099331";
         const SENHA_ADMIN = "aury2026";
-        const VERSION_KEY = "aury_v2_edit"; // Chave de atualização para forçar o botão de editar
+        const VERSION_KEY = "aury_v3_large_preview";
 
         const defaultProducts = [
             // --- BRINCOS ---
@@ -606,7 +615,7 @@
             { id: 213, name: "Pulseira cruz cravejada", category: "pulseiras", price: 229.00, image: "pulseiras/pulseira13.jpg", badge: "", description: "A abençoada Pulseira cruz cravejada combina proteção espiritual e pedrarias cintilantes em uma única joia." }
         ];
 
-        // FORÇAR ATUALIZAÇÃO DO CACHE ANTIGO PARA EXIBIR BOTÃO EDITAR
+        // FORÇAR ATUALIZAÇÃO DO CACHE PARA NOVA VERSÃO DE FOTO MAIOR
         if (!localStorage.getItem(VERSION_KEY)) {
             localStorage.setItem('aury_products', JSON.stringify(defaultProducts));
             localStorage.setItem(VERSION_KEY, "true");
@@ -714,6 +723,28 @@
             else modal.classList.add('hidden');
         }
 
+        function previewSelectedImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    showPreviewImage(e.target.result);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function showPreviewImage(src) {
+            const container = document.getElementById('image-preview-container');
+            const img = document.getElementById('image-preview-img');
+            if (src) {
+                img.src = src;
+                container.classList.remove('hidden');
+            } else {
+                container.classList.add('hidden');
+            }
+        }
+
         function saveProduct(event) {
             event.preventDefault();
             
@@ -804,6 +835,9 @@
             document.getElementById('prod-price').value = product.price;
             document.getElementById('prod-desc').value = product.description || '';
 
+            // Exibir a pré-visualização ampliada do produto sendo editado
+            showPreviewImage(product.image);
+
             document.getElementById('submit-btn').innerText = 'Atualizar Produto';
             document.getElementById('product-form').scrollIntoView({ behavior: 'smooth' });
         }
@@ -821,6 +855,7 @@
             document.getElementById('product-form').reset();
             document.getElementById('edit-id').value = '';
             document.getElementById('submit-btn').innerText = 'Salvar Produto';
+            showPreviewImage(null);
         }
 
         function renderAdminList() {
@@ -835,19 +870,23 @@
 
             products.forEach(p => {
                 list.innerHTML += `
-                    <div class="flex items-center justify-between bg-gray-50 p-2.5 rounded-lg border border-gray-200 gap-2">
-                        <div class="flex items-center gap-2 overflow-hidden flex-grow">
-                            <img src="${p.image}" class="w-8 h-8 object-cover rounded flex-shrink-0" onerror="this.src='https://via.placeholder.com/40'">
-                            <div class="truncate">
-                                <span class="font-semibold text-gray-800 block truncate">${p.name}</span>
-                                <span class="text-[10px] text-wine-900 font-bold">R$ ${Number(p.price).toFixed(2).replace('.', ',')}</span>
-                            </div>
+                    <div class="flex items-center justify-between bg-gray-50 p-3 rounded-xl border border-gray-200 gap-3">
+                        <!-- Imagem do produto em tamanho maior -->
+                        <div class="w-16 h-16 rounded-lg overflow-hidden bg-white border border-gray-300 flex-shrink-0 shadow-sm">
+                            <img src="${p.image}" alt="${p.name}" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/80'">
                         </div>
+                        
+                        <div class="flex-grow truncate">
+                            <span class="font-bold text-gray-900 text-xs block truncate mb-0.5">${p.name}</span>
+                            <span class="text-xs text-wine-900 font-bold font-serif">R$ ${Number(p.price).toFixed(2).replace('.', ',')}</span>
+                            <span class="text-[10px] text-gray-400 block uppercase font-medium tracking-wide">${p.category}</span>
+                        </div>
+
                         <div class="flex items-center gap-1.5 flex-shrink-0">
-                            <button onclick="editProduct(${p.id})" class="px-2.5 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded transition font-bold text-[11px] flex items-center gap-1 shadow-sm">
+                            <button onclick="editProduct(${p.id})" class="px-3 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg transition font-bold text-[11px] flex items-center gap-1 shadow-sm">
                                 <i class="fa-solid fa-pen-to-square"></i> Editar
                             </button>
-                            <button onclick="deleteProduct(${p.id})" class="px-2.5 py-1.5 bg-red-100 hover:bg-red-600 text-red-600 hover:text-white rounded transition font-bold text-[11px] flex items-center gap-1">
+                            <button onclick="deleteProduct(${p.id})" class="px-3 py-2 bg-red-100 hover:bg-red-600 text-red-600 hover:text-white rounded-lg transition font-bold text-[11px] flex items-center gap-1">
                                 <i class="fa-solid fa-trash-can"></i> Excluir
                             </button>
                         </div>
