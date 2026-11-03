@@ -404,6 +404,13 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
+        // OTIMIZAÇÃO: Ativar cache local do Firestore para carregamento instantâneo
+        db.enablePersistence().catch(err => {
+            if (err.code !== 'failed-precondition' && err.code !== 'unimplemented') {
+                console.warn("Firestore Persistence warning:", err);
+            }
+        });
+
         const numeroWhatsApp = "5591984099331";
         const SENHA_ADMIN = "aury2026";
 
@@ -420,6 +427,20 @@
         let categories = ["aneis", "gargantilhas", "brincos", "pulseiras", "escapularios", "conjuntos"];
         let cart = [];
         let wishlist = [];
+
+        // OTIMIZAÇÃO: Exibe cartões esqueleto animados enquanto os produtos carregam do Firestore
+        function showSkeletons() {
+            const grid = document.getElementById('product-grid');
+            if (!grid) return;
+            grid.innerHTML = Array(4).fill(0).map(() => `
+                <div class="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm animate-pulse p-4 space-y-4">
+                    <div class="bg-gray-200 aspect-square rounded-lg w-full"></div>
+                    <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+                    <div class="h-4 bg-gray-200 rounded w-1/2"></div>
+                    <div class="h-8 bg-gray-200 rounded w-full"></div>
+                </div>
+            `).join('');
+        }
 
         // Carregar do Firebase Firestore em tempo real ordenando pelos mais recentes
         async function loadProductsFromFirebase() {
@@ -860,7 +881,8 @@
             // Placeholder para modal de brinde
         }
 
-        // Inicialização carregando direto do Firebase
+        // Executar esqueleto de carregamento antes de chamar a base de dados
+        showSkeletons();
         loadProductsFromFirebase();
     </script>
 </body>
