@@ -421,7 +421,7 @@
         let cart = [];
         let wishlist = [];
 
-        // Carregar do Firebase Firestore em tempo real
+        // Carregar do Firebase Firestore em tempo real ordenando pelos mais recentes
         async function loadProductsFromFirebase() {
             try {
                 const snapshot = await db.collection('aury_products').get();
@@ -437,6 +437,9 @@
                     });
                 }
                 
+                // ORDENAÇÃO: Garante que os mais recentes (maior ID) fiquem em primeiro lugar
+                products.sort((a, b) => Number(b.id) - Number(a.id));
+                
                 updateCategoriesList();
                 renderCategoriesUI();
                 renderProducts(products);
@@ -446,7 +449,8 @@
                 }
             } catch (error) {
                 console.error("Erro ao carregar do Firebase:", error);
-                products = defaultProducts;
+                products = [...defaultProducts];
+                products.sort((a, b) => Number(b.id) - Number(a.id));
                 updateCategoriesList();
                 renderCategoriesUI();
                 renderProducts(products);
