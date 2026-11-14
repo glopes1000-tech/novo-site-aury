@@ -201,7 +201,7 @@
             </div>
         </div>
 
-        <!-- GRID DE PRODUTOS (Disponíveis primeiro, Esgotados por último) -->
+        <!-- GRID DE PRODUTOS (Ativos no topo, Esgotados rigorosamente no final) -->
         <div id="product-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
         </div>
 
@@ -437,13 +437,17 @@
         let cart = [];
         let wishlist = [];
 
-        function sortProductsWithSoldOutLast(items) {
-            return [...items].sort((a, b) => {
-                const aSoldOut = a.status === 'esgotado' ? 1 : 0;
-                const bSoldOut = b.status === 'esgotado' ? 1 : 0;
-                if (aSoldOut !== bSoldOut) return aSoldOut - bSoldOut;
-                return Number(b.id) - Number(a.id);
-            });
+        // ORDENAÇÃO RIGOROSA: Separa ativos e esgotados e une com os ativos estritamente na frente
+        function sortProductsStrictlySoldOutLast(items) {
+            const ativos = items.filter(p => p.status !== 'esgotado');
+            const esgotados = items.filter(p => p.status === 'esgotado');
+
+            // Ordena os ativos do mais recente para o mais antigo (maior ID primeiro)
+            ativos.sort((a, b) => Number(b.id) - Number(a.id));
+            // Ordena os esgotados também do mais recente para o mais antigo
+            esgotados.sort((a, b) => Number(b.id) - Number(a.id));
+
+            return [...ativos, ...esgotados];
         }
 
         function showSkeletons() {
@@ -476,7 +480,7 @@
                     });
                 }
                 
-                products = sortProductsWithSoldOutLast(products);
+                products = sortProductsStrictlySoldOutLast(products);
                 
                 updateCategoriesList();
                 renderCategoriesUI();
@@ -487,7 +491,7 @@
                 }
             } catch (error) {
                 console.error("Erro ao carregar do Firebase:", error);
-                products = sortProductsWithSoldOutLast(defaultProducts);
+                products = sortProductsStrictlySoldOutLast(defaultProducts);
                 updateCategoriesList();
                 renderCategoriesUI();
                 renderCatalog(products, currentActiveCategory);
@@ -557,7 +561,7 @@
             if (activeCategory !== 'todos') {
                 filtered = items.filter(p => p.category === activeCategory);
             }
-            const ordered = sortProductsWithSoldOutLast(filtered);
+            const ordered = sortProductsStrictlySoldOutLast(filtered);
             renderProductsGrid('product-grid', ordered);
         }
 
