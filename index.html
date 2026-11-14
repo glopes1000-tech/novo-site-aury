@@ -201,7 +201,7 @@
             </div>
         </div>
 
-        <!-- GRID DE PRODUTOS (Ativos no topo, Esgotados rigorosamente no final) -->
+        <!-- GRID DE PRODUTOS (Ativos 100% na frente, Esgotados 100% no final) -->
         <div id="product-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
         </div>
 
@@ -437,7 +437,7 @@
         let cart = [];
         let wishlist = [];
 
-        // ORDENAÇÃO RIGOROSA: Separa ativos e esgotados e une com os ativos estritamente na frente
+        // ORDENAÇÃO ABSOLUTA: Separa 100% os ativos e esgotados antes de juntar
         function sortProductsStrictlySoldOutLast(items) {
             const ativos = items.filter(p => p.status !== 'esgotado');
             const esgotados = items.filter(p => p.status === 'esgotado');
@@ -447,6 +447,7 @@
             // Ordena os esgotados também do mais recente para o mais antigo
             esgotados.sort((a, b) => Number(b.id) - Number(a.id));
 
+            // Retorna a lista unida: TODOS os ativos primeiro, e TODOS os esgotados estritamente por último
             return [...ativos, ...esgotados];
         }
 
