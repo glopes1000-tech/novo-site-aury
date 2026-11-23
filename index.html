@@ -4,13 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aury Joias e Semijoias | Elegância & Luxo</title>
+    
+    <!-- Preconnect para acelerar conexões externas -->
+    <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Firebase SDKs (Compat v9) -->
@@ -105,7 +110,7 @@
 
                 <!-- Navigation Desktop Dinâmica -->
                 <nav id="desktop-nav" class="hidden md:flex items-center space-x-5 text-sm font-medium tracking-wide">
-                    <button onclick="filterCategory('todos')" class="nav-link text-white hover:text-gold-500 transition py-2 border-b-2 border-transparent hover:border-gold-500">Início</button>
+                    <button onclick="filterCategory('todos', event)" class="nav-link text-white hover:text-gold-500 transition py-2 border-b-2 border-transparent hover:border-gold-500">Início</button>
                 </nav>
 
                 <div class="flex items-center space-x-5">
@@ -197,7 +202,7 @@
 
             <!-- Filtros de Categorias Dinâmicos -->
             <div id="category-filters" class="flex flex-wrap items-center justify-center md:justify-end gap-2">
-                <button onclick="filterCategory('todos')" class="btn-cat active px-4 py-1.5 rounded-full text-xs font-semibold bg-wine-900 text-gold-500 shadow-sm transition">Todos</button>
+                <button onclick="filterCategory('todos', event)" class="btn-cat active px-4 py-1.5 rounded-full text-xs font-semibold bg-wine-900 text-gold-500 shadow-sm transition">Todos</button>
             </div>
         </div>
 
@@ -222,8 +227,11 @@
                         <p class="text-[10px] text-gold-400">Gestão do Catálogo & Estoque em Tempo Real</p>
                     </div>
                 </div>
-                <div class="flex items-center gap-4">
-                    <span id="admin-status" class="hidden sm:inline-block px-3 py-1 bg-green-500/20 text-green-300 border border-green-500/30 text-xs rounded-full font-medium">
+                <div class="flex items-center gap-3">
+                    <button id="btn-otimizar-banco" onclick="otimizarTodasImagensBanco()" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 bg-gold-500/20 hover:bg-gold-500 text-gold-300 hover:text-wine-950 border border-gold-500/40 text-xs rounded-lg font-bold transition" title="Comprime imagens antigas pesadas no banco para abrir o site mais rápido">
+                        <i class="fa-solid fa-bolt"></i> Otimizar Fotos Antigas
+                    </button>
+                    <span id="admin-status" class="hidden md:inline-block px-3 py-1 bg-green-500/20 text-green-300 border border-green-500/30 text-xs rounded-full font-medium">
                         <i class="fa-solid fa-circle text-[8px] mr-1 text-green-400 animate-pulse"></i> Conectado ao Firebase
                     </span>
                     <button onclick="toggleAdminModal(false)" class="px-4 py-2 bg-wine-950 hover:bg-red-800 text-gold-400 hover:text-white text-xs font-bold rounded-lg border border-gold-500/30 transition flex items-center gap-2">
@@ -264,7 +272,6 @@
                                             </button>
                                         </div>
                                         <select id="prod-cat" class="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-wine-900 text-xs shadow-sm bg-white">
-                                            <!-- Preenchido dinamicamente -->
                                         </select>
                                     </div>
                                     <div>
@@ -291,9 +298,9 @@
                                 </div>
 
                                 <div>
-                                    <label class="block font-bold text-gray-700 mb-1">Foto do Produto *</label>
+                                    <label class="block font-bold text-gray-700 mb-1">Foto do Produto * <span class="text-green-600 font-normal">(Otimização automática ativa)</span></label>
                                     <input type="file" id="prod-image-file" accept="image/*" onchange="previewSelectedImage(event)" class="w-full p-2 border border-gray-300 rounded-xl focus:outline-none focus:border-wine-900 text-xs bg-gray-50 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-wine-900 file:text-gold-400 hover:file:bg-wine-950 cursor-pointer">
-                                    <p class="text-[10px] text-gray-500 mt-1">Ao editar, se não escolher uma foto nova, a imagem anterior será mantida.</p>
+                                    <p class="text-[10px] text-gray-500 mt-1">A foto é redimensionada automaticamente para abrir rápido no celular das clientes.</p>
                                     
                                     <!-- PRÉ-VISUALIZAÇÃO AMPLIADA COM LUPA -->
                                     <div id="image-preview-container" class="mt-3 hidden bg-gray-50 p-3 rounded-xl border border-gray-200 flex items-center gap-4">
@@ -304,7 +311,7 @@
                                             <span class="block font-bold text-wine-900 text-xs flex items-center gap-1 mb-1">
                                                 <i class="fa-solid fa-magnifying-glass-plus text-gold-500"></i> Lupa de Detalhes
                                             </span>
-                                            <span class="text-[11px] text-gray-600 leading-relaxed">Passe o mouse sobre a imagem ao lado para visualizar os detalhes em alta resolução.</span>
+                                            <span id="image-size-info" class="text-[11px] text-gray-600 leading-relaxed">Passe o mouse sobre a imagem ao lado para visualizar os detalhes em alta resolução.</span>
                                         </div>
                                     </div>
                                 </div>
@@ -343,7 +350,6 @@
 
                             <!-- LISTA COM IMAGENS MAIORES -->
                             <div id="admin-products-list" class="max-h-[calc(100vh-280px)] overflow-y-auto space-y-3 pr-2">
-                                <!-- Preenchido dinamicamente via JS -->
                             </div>
                         </div>
                     </div>
@@ -399,7 +405,7 @@
         </div>
     </div>
 
-    <!-- JavaScript Principal com Firebase Firestore -->
+    <!-- JavaScript Principal Otimizado -->
     <script>
         // --- CONFIGURAÇÃO DO FIREBASE ---
         const firebaseConfig = {
@@ -414,7 +420,8 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        db.enablePersistence().catch(err => {
+        // Habilita cache offline persistente do Firestore
+        db.enablePersistence({ synchronizeTabs: true }).catch(err => {
             if (err.code !== 'failed-precondition' && err.code !== 'unimplemented') {
                 console.warn("Firestore Persistence warning:", err);
             }
@@ -422,6 +429,7 @@
 
         const numeroWhatsApp = "5591981606461";
         const SENHA_ADMIN = "aury2026";
+        const CACHE_KEY = "aury_catalog_fast_cache_v1";
 
         const defaultProducts = [
             { id: 501, name: "Brinco Zircônia Quadrado 6x6mm", category: "brincos", price: 137.00, image: "brincos/brinco1.jpg", badge: "Lançamento", status: "ativo", description: "O deslumbrante Brinco Zircônia Quadrado 6x6mm combina geometria perfeita e alto brilho em um banho de ouro 18K impecável." },
@@ -436,15 +444,94 @@
         let categories = ["aneis", "gargantilhas", "brincos", "pulseiras", "escapularios", "conjuntos"];
         let cart = [];
         let wishlist = [];
+        let currentActiveCategory = 'todos';
+        let compressedBase64Cache = "";
 
-        // VERIFICAÇÃO ROBUSTA DE ESGOTADO (independente de maiúsculas, minúsculas ou badges)
+        // --- COMPRESSÃO AUTOMÁTICA DE IMAGEM (REDUZ ~90% DO PESO) ---
+        function compressImageDataUrl(dataUrl, maxDimension = 800, quality = 0.80) {
+            return new Promise((resolve) => {
+                if (!dataUrl || !dataUrl.startsWith('data:image')) {
+                    return resolve(dataUrl);
+                }
+                const img = new Image();
+                img.onload = () => {
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > maxDimension || height > maxDimension) {
+                        if (width > height) {
+                            height = Math.round((height * maxDimension) / width);
+                            width = maxDimension;
+                        } else {
+                            width = Math.round((width * maxDimension) / height);
+                            height = maxDimension;
+                        }
+                    }
+
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.fillStyle = "#FFFFFF";
+                    ctx.fillRect(0, 0, width, height);
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    const compressed = canvas.toDataURL('image/jpeg', quality);
+                    // Só substitui se realmente ficou menor
+                    resolve(compressed.length < dataUrl.length ? compressed : dataUrl);
+                };
+                img.onerror = () => resolve(dataUrl);
+                img.src = dataUrl;
+            });
+        }
+
+        function compressFileToBase64(file, maxDimension = 800, quality = 0.80) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    const optimized = await compressImageDataUrl(e.target.result, maxDimension, quality);
+                    resolve(optimized);
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // --- CACHE INSTANTÂNEO EM MEMÓRIA LOCAL ---
+        function saveLocalCache(items) {
+            try {
+                localStorage.setItem(CACHE_KEY, JSON.stringify(items));
+            } catch (e) {
+                // Se exceder a cota do localStorage (5MB), limpa para não travar
+                localStorage.removeItem(CACHE_KEY);
+            }
+        }
+
+        function hydrateFromLocalCache() {
+            try {
+                const cached = localStorage.getItem(CACHE_KEY);
+                if (cached) {
+                    const parsed = JSON.parse(cached);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        products = sortProductsStrictlySoldOutLast(parsed);
+                        updateCategoriesList();
+                        renderCategoriesUI();
+                        renderCatalog(products, currentActiveCategory);
+                        return true;
+                    }
+                }
+            } catch (e) {
+                console.warn("Cache local ignorado:", e);
+            }
+            return false;
+        }
+
         function isProductSoldOut(p) {
             const status = (p.status || '').toLowerCase().trim();
             const badge = (p.badge || '').toLowerCase().trim();
             return status === 'esgotado' || badge === 'esgotado';
         }
 
-        // ORDENAÇÃO ABSOLUTA: Separa 100% os ativos e esgotados antes de juntar
         function sortProductsStrictlySoldOutLast(items) {
             const ativos = items.filter(p => !isProductSoldOut(p));
             const esgotados = items.filter(p => isProductSoldOut(p));
@@ -458,7 +545,7 @@
         function showSkeletons() {
             const grid = document.getElementById('product-grid');
             if (!grid) return;
-            grid.innerHTML = Array(4).fill(0).map(() => `
+            grid.innerHTML = Array(8).fill(0).map(() => `
                 <div class="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm animate-pulse p-3 sm:p-4 space-y-3 sm:space-y-4">
                     <div class="bg-gray-200 aspect-square rounded-lg w-full"></div>
                     <div class="h-3.5 sm:h-4 bg-gray-200 rounded w-3/4"></div>
@@ -468,43 +555,60 @@
             `).join('');
         }
 
-        async function loadProductsFromFirebase() {
-            try {
-                const snapshot = await db.collection('aury_products').get();
-                if (snapshot.empty) {
+        // --- CARREGAMENTO EM TEMPO REAL (CACHE PRIMEIRO + SINCRONIZAÇÃO EM SEGUNDO PLANO) ---
+        function startRealtimeCatalogSync() {
+            const hasInstantCache = hydrateFromLocalCache();
+            if (!hasInstantCache) {
+                showSkeletons();
+            }
+
+            db.collection('aury_products').onSnapshot({ includeMetadataChanges: true }, async (snapshot) => {
+                if (snapshot.empty && !snapshot.metadata.fromCache) {
                     for (const prod of defaultProducts) {
                         await db.collection('aury_products').doc(String(prod.id)).set(prod);
                     }
-                    products = [...defaultProducts];
-                } else {
-                    products = [];
+                    return;
+                }
+
+                if (!snapshot.empty) {
+                    const loaded = [];
                     snapshot.forEach(doc => {
                         let data = doc.data();
                         if (!data.status) data.status = "ativo";
-                        products.push(data);
+                        loaded.push(data);
                     });
+
+                    products = sortProductsStrictlySoldOutLast(loaded);
+                    saveLocalCache(products);
+
+                    updateCategoriesList();
+                    renderCategoriesUI();
+                    
+                    // Mantém busca ativa se o usuário já estiver digitando
+                    const searchInput = document.getElementById('search-input');
+                    if (searchInput && searchInput.value.trim() !== '') {
+                        searchProducts();
+                    } else {
+                        renderCatalog(products, currentActiveCategory);
+                    }
+
+                    if (!document.getElementById('admin-modal').classList.contains('hidden')) {
+                        filterAdminList();
+                    }
                 }
-                
-                products = sortProductsStrictlySoldOutLast(products);
-                
-                updateCategoriesList();
-                renderCategoriesUI();
-                renderCatalog(products, currentActiveCategory);
-                
-                if (!document.getElementById('admin-modal').classList.contains('hidden')) {
-                    renderAdminList();
+            }, (error) => {
+                console.error("Erro na sincronização com Firebase:", error);
+                if (products.length === 0) {
+                    products = sortProductsStrictlySoldOutLast(defaultProducts);
+                    updateCategoriesList();
+                    renderCategoriesUI();
+                    renderCatalog(products, currentActiveCategory);
                 }
-            } catch (error) {
-                console.error("Erro ao carregar do Firebase:", error);
-                products = sortProductsStrictlySoldOutLast(defaultProducts);
-                updateCategoriesList();
-                renderCategoriesUI();
-                renderCatalog(products, currentActiveCategory);
-            }
+            });
         }
 
         function updateCategoriesList() {
-            const catSet = new Set(categories);
+            const catSet = new Set(["aneis", "gargantilhas", "brincos", "pulseiras", "escapularios", "conjuntos"]);
             products.forEach(p => {
                 if (p.category) catSet.add(p.category.toLowerCase().trim());
             });
@@ -544,19 +648,21 @@
         function renderCategoriesUI() {
             const desktopNav = document.getElementById('desktop-nav');
             if (desktopNav) {
-                desktopNav.innerHTML = `<button onclick="filterCategory('todos')" class="nav-link text-white hover:text-gold-500 transition py-2 border-b-2 border-transparent hover:border-gold-500">Início</button>`;
+                desktopNav.innerHTML = `<button onclick="filterCategory('todos', event)" class="nav-link text-white hover:text-gold-500 transition py-2 border-b-2 border-transparent hover:border-gold-500">Início</button>`;
                 categories.forEach(cat => {
                     const formatted = cat.charAt(0).toUpperCase() + cat.slice(1);
-                    desktopNav.innerHTML += `<button onclick="filterCategory('${cat}')" class="nav-link text-gray-200 hover:text-gold-500 transition py-2">${formatted}</button>`;
+                    desktopNav.innerHTML += `<button onclick="filterCategory('${cat}', event)" class="nav-link text-gray-200 hover:text-gold-500 transition py-2">${formatted}</button>`;
                 });
             }
 
             const catFilters = document.getElementById('category-filters');
             if (catFilters) {
-                catFilters.innerHTML = `<button onclick="filterCategory('todos')" class="btn-cat active px-4 py-1.5 rounded-full text-xs font-semibold bg-wine-900 text-gold-500 shadow-sm transition">Todos</button>`;
+                const isTodosActive = currentActiveCategory === 'todos';
+                catFilters.innerHTML = `<button onclick="filterCategory('todos', event)" class="btn-cat px-4 py-1.5 rounded-full text-xs font-semibold ${isTodosActive ? 'bg-wine-900 text-gold-500 shadow-sm' : 'bg-gray-200 text-gray-700 hover:bg-wine-900 hover:text-gold-500'} transition">Todos</button>`;
                 categories.forEach(cat => {
                     const formatted = cat.charAt(0).toUpperCase() + cat.slice(1);
-                    catFilters.innerHTML += `<button onclick="filterCategory('${cat}')" class="btn-cat px-4 py-1.5 rounded-full text-xs font-semibold bg-gray-200 text-gray-700 hover:bg-wine-900 hover:text-gold-500 transition">${formatted}</button>`;
+                    const isActive = currentActiveCategory === cat;
+                    catFilters.innerHTML += `<button onclick="filterCategory('${cat}', event)" class="btn-cat px-4 py-1.5 rounded-full text-xs font-semibold ${isActive ? 'bg-wine-900 text-gold-500 shadow-sm' : 'bg-gray-200 text-gray-700 hover:bg-wine-900 hover:text-gold-500'} transition">${formatted}</button>`;
                 });
             }
         }
@@ -573,7 +679,6 @@
         function renderProductsGrid(elementId, items) {
             const grid = document.getElementById(elementId);
             if (!grid) return;
-            grid.innerHTML = '';
 
             if (items.length === 0) {
                 grid.innerHTML = `
@@ -585,9 +690,13 @@
                 return;
             }
 
-            items.forEach(product => {
+            // Monta todo o HTML em uma única string para evitar múltiplos reflows no navegador
+            const cardsHTML = items.map((product, index) => {
                 const isSoldOut = isProductSoldOut(product);
                 const isFavorite = wishlist.includes(product.id);
+                // Os 4 primeiros carregam com prioridade máxima; os demais usam lazy loading nativo
+                const loadingAttr = index < 4 ? 'loading="eager" fetchpriority="high"' : 'loading="lazy" decoding="async"';
+
                 let badgeHTML = '';
                 if (isSoldOut) {
                     badgeHTML = `<span class="absolute top-2 left-2 sm:top-3 sm:left-3 z-10 bg-gray-700 text-white text-[9px] sm:text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full border border-gray-500/30">Esgotado</span>`;
@@ -615,14 +724,14 @@
                     </div>
                 `;
 
-                grid.innerHTML += `
+                return `
                     <div class="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 group flex flex-col justify-between ${isSoldOut ? 'opacity-85 grayscale-[25%]' : ''}">
                         <div class="relative overflow-hidden aspect-square bg-gray-100">
                             ${badgeHTML}
                             <button onclick="toggleWishlist(${product.id})" class="absolute top-2 right-2 sm:top-3 sm:right-3 z-10 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center text-gray-600 hover:text-red-500 transition shadow">
                                 <i class="${isFavorite ? 'fa-solid text-red-500' : 'fa-regular'} fa-heart text-xs sm:text-sm"></i>
                             </button>
-                            <img onclick="openQuickView(${product.id})" src="${product.image}" alt="${product.name}" class="w-full h-full object-cover cursor-pointer group-hover:scale-105 transition-transform duration-550" onerror="this.src='https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&q=80&w=600'">
+                            <img onclick="openQuickView(${product.id})" src="${product.image}" alt="${product.name}" ${loadingAttr} class="w-full h-full object-cover cursor-pointer group-hover:scale-105 transition-transform duration-550" onerror="this.src='https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&q=80&w=600'">
                             <button onclick="openQuickView(${product.id})" class="hidden sm:block absolute inset-x-4 bottom-4 py-2.5 bg-wine-900/90 hover:bg-wine-900 text-gold-500 text-xs uppercase font-bold tracking-wider rounded-lg backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-lg border border-gold-500/30">
                                 <i class="fa-regular fa-eye mr-1"></i> Visualização Rápida
                             </button>
@@ -639,12 +748,19 @@
                         </div>
                     </div>
                 `;
-            });
+            }).join('');
+
+            grid.innerHTML = cardsHTML;
         }
 
         async function saveProduct(event) {
             event.preventDefault();
             
+            const submitBtn = document.getElementById('submit-btn');
+            const originalBtnHTML = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Otimizando e Salvando...';
+
             const editId = document.getElementById('edit-id').value;
             const name = document.getElementById('prod-name').value;
             const category = document.getElementById('prod-cat').value;
@@ -670,35 +786,69 @@
                 try {
                     await db.collection('aury_products').doc(String(idToSave)).set(productData);
                     alert(editId ? '✨ Produto atualizado com sucesso no catálogo!' : '✨ Novo produto cadastrado com sucesso!');
-                    
                     resetForm();
-                    await loadProductsFromFirebase();
-                    renderAdminList();
                 } catch (error) {
                     console.error("Erro ao salvar no Firebase:", error);
                     alert("Erro ao salvar o produto.");
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnHTML;
                 }
             };
 
-            if (editId) {
-                const existingProduct = products.find(p => p.id == editId);
-                let imageUrl = existingProduct ? existingProduct.image : '';
-                if (imageFile) {
-                    const reader = new FileReader();
-                    reader.onload = e => processAndSave(e.target.result);
-                    reader.readAsDataURL(imageFile);
+            try {
+                if (editId) {
+                    const existingProduct = products.find(p => p.id == editId);
+                    let imageUrl = existingProduct ? existingProduct.image : '';
+                    if (imageFile) {
+                        imageUrl = compressedBase64Cache || await compressFileToBase64(imageFile);
+                    }
+                    await processAndSave(imageUrl);
                 } else {
-                    processAndSave(imageUrl);
+                    if (imageFile) {
+                        const imageUrl = compressedBase64Cache || await compressFileToBase64(imageFile);
+                        await processAndSave(imageUrl);
+                    } else {
+                        alert('Por favor, selecione uma foto do produto.');
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalBtnHTML;
+                    }
                 }
-            } else {
-                if (imageFile) {
-                    const reader = new FileReader();
-                    reader.onload = e => processAndSave(e.target.result);
-                    reader.readAsDataURL(imageFile);
-                } else {
-                    alert('Por favor, selecione uma foto do produto.');
+            } catch (err) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnHTML;
+            }
+        }
+
+        // Otimiza de uma vez todas as fotos pesadas já cadastradas anteriormente no Firestore
+        async function otimizarTodasImagensBanco() {
+            const btn = document.getElementById('btn-otimizar-banco');
+            const pesadas = products.filter(p => p.image && p.image.startsWith('data:image') && p.image.length > 150000);
+
+            if (pesadas.length === 0) {
+                alert("Todas as fotos do catálogo já estão leves e otimizadas!");
+                return;
+            }
+
+            if (!confirm(`Encontramos ${pesadas.length} foto(s) pesada(s) no catálogo. Deseja comprimir agora para deixar o site ultra-rápido?`)) {
+                return;
+            }
+
+            btn.disabled = true;
+            let otimizadas = 0;
+
+            for (const prod of pesadas) {
+                btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Otimizando ${otimizadas + 1}/${pesadas.length}...`;
+                const novaImagem = await compressImageDataUrl(prod.image, 800, 0.80);
+                if (novaImagem.length < prod.image.length) {
+                    await db.collection('aury_products').doc(String(prod.id)).update({ image: novaImagem });
+                    otimizadas++;
                 }
             }
+
+            btn.disabled = false;
+            btn.innerHTML = `<i class="fa-solid fa-bolt"></i> Otimizar Fotos Antigas`;
+            alert(`Pronto! ${otimizadas} foto(s) foram otimizadas com sucesso. O carregamento agora será imediato.`);
         }
 
         async function deleteProduct(id) {
@@ -706,8 +856,6 @@
                 try {
                     await db.collection('aury_products').doc(String(id)).delete();
                     alert("Produto excluído com sucesso!");
-                    await loadProductsFromFirebase();
-                    renderAdminList();
                 } catch (error) {
                     console.error("Erro ao excluir:", error);
                 }
@@ -736,7 +884,6 @@
         function renderAdminList(filteredItems = null) {
             const list = document.getElementById('admin-products-list');
             if (!list) return;
-            list.innerHTML = '';
 
             const itemsToRender = filteredItems || products;
 
@@ -745,19 +892,23 @@
                 return;
             }
 
-            itemsToRender.forEach(p => {
+            list.innerHTML = itemsToRender.map(p => {
                 const isSoldOut = isProductSoldOut(p);
-                list.innerHTML += `
+                const kbSize = p.image && p.image.startsWith('data:image') ? Math.round((p.image.length * 3) / 4 / 1024) : null;
+                const sizeBadge = kbSize ? `<span class="text-[9px] ${kbSize > 150 ? 'bg-amber-100 text-amber-800' : 'bg-gray-200 text-gray-600'} px-2 py-0.5 rounded-full font-semibold">${kbSize} KB</span>` : '';
+
+                return `
                     <div class="flex items-center justify-between bg-gray-50 hover:bg-wine-50/30 p-3 rounded-xl border border-gray-200 transition gap-4">
                         <div class="zoom-box w-20 h-20 rounded-xl border border-gold-500/50 bg-white overflow-hidden flex-shrink-0 shadow-sm" onmousemove="zoomImage(event)" onmouseleave="resetZoom(event)">
-                            <img src="${p.image}" alt="${p.name}" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/120'">
+                            <img src="${p.image}" alt="${p.name}" loading="lazy" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/120'">
                         </div>
                         <div class="flex-grow truncate">
                             <span class="font-bold text-gray-900 text-xs block truncate mb-1">${p.name}</span>
-                            <div class="flex items-center gap-2">
+                            <div class="flex flex-wrap items-center gap-1.5">
                                 <span class="text-xs text-wine-900 font-bold font-serif">R$ ${Number(p.price).toFixed(2).replace('.', ',')}</span>
                                 <span class="text-[9px] bg-wine-100 text-wine-900 px-2 py-0.5 rounded-full uppercase font-semibold">${p.category}</span>
                                 <span class="text-[9px] ${isSoldOut ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'} px-2 py-0.5 rounded-full uppercase font-semibold">${isSoldOut ? 'Esgotado' : 'Ativo'}</span>
+                                ${sizeBadge}
                             </div>
                         </div>
                         <div class="flex items-center gap-2 flex-shrink-0">
@@ -770,7 +921,7 @@
                         </div>
                     </div>
                 `;
-            });
+            }).join('');
         }
 
         function filterAdminList() {
@@ -782,6 +933,7 @@
         function editProduct(id) {
             const product = products.find(p => p.id == id);
             if (!product) return;
+            compressedBase64Cache = "";
             document.getElementById('edit-id').value = product.id;
             document.getElementById('prod-name').value = product.name;
             renderCategorySelectOptions(product.category);
@@ -799,6 +951,7 @@
         }
 
         function resetForm() {
+            compressedBase64Cache = "";
             document.getElementById('product-form').reset();
             document.getElementById('edit-id').value = '';
             document.getElementById('prod-status').value = 'ativo';
@@ -808,15 +961,16 @@
             document.getElementById('image-preview-container').classList.add('hidden');
         }
 
-        function previewSelectedImage(event) {
+        async function previewSelectedImage(event) {
             const file = event.target.files[0];
             if (file) {
-                const reader = new FileReader();
-                reader.onload = e => {
-                    document.getElementById('image-preview-img').src = e.target.result;
-                    document.getElementById('image-preview-container').classList.remove('hidden');
-                };
-                reader.readAsDataURL(file);
+                const originalKB = Math.round(file.size / 1024);
+                compressedBase64Cache = await compressFileToBase64(file, 800, 0.80);
+                const finalKB = Math.round((compressedBase64Cache.length * 3) / 4 / 1024);
+
+                document.getElementById('image-preview-img').src = compressedBase64Cache;
+                document.getElementById('image-size-info').innerHTML = `Foto otimizada automaticamente: <strong>${originalKB} KB → ${finalKB} KB</strong>. Passe o mouse ao lado para dar zoom.`;
+                document.getElementById('image-preview-container').classList.remove('hidden');
             }
         }
 
@@ -834,18 +988,9 @@
             img.style.transformOrigin = 'center center';
         }
 
-        let currentActiveCategory = 'todos';
-        function filterCategory(cat) {
-            document.querySelectorAll('.btn-cat').forEach(btn => {
-                btn.classList.remove('bg-wine-900', 'text-gold-500');
-                btn.classList.add('bg-gray-200', 'text-gray-700');
-            });
-            if (event && event.target) {
-                event.target.classList.remove('bg-gray-200', 'text-gray-700');
-                event.target.classList.add('bg-wine-900', 'text-gold-500');
-            }
-
+        function filterCategory(cat, ev) {
             currentActiveCategory = cat;
+            renderCategoriesUI();
             renderCatalog(products, currentActiveCategory);
         }
 
@@ -956,8 +1101,8 @@
 
         function toggleBrindeModal(open) {}
 
-        showSkeletons();
-        loadProductsFromFirebase();
+        // Inicializa imediatamente usando cache local + listener em tempo real
+        startRealtimeCatalogSync();
     </script>
 </body>
 </html>
